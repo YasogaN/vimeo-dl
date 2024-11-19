@@ -1,0 +1,28 @@
+{
+  "name": "vimeo-dl",
+  "version": "1.0.0",
+  "description": "A CLI node module written in JavaScript to download videos using vimeo's playlist.json file or link to a webpage.",
+  "license": "MIT",
+  "keywords": [
+    "vimeo, downloader, vimeo downloader, video downloader"
+  ],
+  "homepage": "https://github.com/YasogaN/vimeo-dl#readme",
+  "bugs": {
+    "url": "https://github.com/YasogaN/vimeo-dl/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YasogaN/vimeo-dl.git"
+  },
+  "author": {
+    "name": "Yasoga Nanayakkarawasam",
+    "email": "contact@yasogan.dev"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "puppeteer": "^23.8.0",
+    "yargs": "^17.7.2"
+  },
+  "type": "module"
+}
