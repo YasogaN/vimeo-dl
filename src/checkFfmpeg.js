@@ -17,10 +17,12 @@ function prompt(msg, yes, no) {
     rl.question(msg, (a) => (['y', 'yes'].includes(a.toLowerCase()) ? yes() : no()));
 }
 
-runCmd('ffmpeg -version', () => rl.close(), () => {
-    prompt('ffmpeg not found. Install? ([y]/[n]): ', () => {
-        const [chk, ins, fb] = cmds[os.platform()] || [];
-        if (!chk) return console.log('Unsupported OS'), rl.close();
-        runCmd(chk, () => runCmd(ins, () => console.log('Installed!'), () => runCmd(fb)), () => runCmd(fb));
-    }, () => console.log('ffmpeg is required. Exiting...'), rl.close());
-});
+export function checkFfmpeg() {
+    runCmd('ffmpeg -version', () => rl.close(), () => {
+        prompt('ffmpeg not found. Install? ([y]/[n]): ', () => {
+            const [chk, ins, fb] = cmds[os.platform()] || [];
+            if (!chk) return console.log('Unsupported OS'), rl.close();
+            runCmd(chk, () => runCmd(ins, () => console.log('Installed!'), () => runCmd(fb)), () => runCmd(fb));
+        }, () => console.log('ffmpeg is required. Exiting...'), rl.close());
+    });
+}
