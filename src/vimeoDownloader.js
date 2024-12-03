@@ -13,18 +13,14 @@ export class VimeoDownloader {
     async downloadStream(url, type) {
         const tempFileName = `temp_${type}.mp4`;
         try {
-            const response = await axios({
-                url,
-                method: 'GET',
+            const response = await axios.get(url, {
                 responseType: 'arraybuffer',
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 },
                 onDownloadProgress: (progressEvent) => {
-                    const percentCompleted = ((progressEvent.loaded * 100) / progressEvent.total).toFixed(2)
-                    this.progress.set(type, percentCompleted);
-                    this.logProgress();
-                }
+                    this.updateProgress(type, progressEvent.loaded, progressEvent.total);
+                },
             });
 
             await fs.writeFile(tempFileName, response.data);
@@ -32,78 +28,65 @@ export class VimeoDownloader {
             return tempFileName;
         } catch (error) {
             this.handleDownloadError(error, type);
-            throw error;
+            throw new Error(`Failed to download ${type}`);
         }
     }
 
+    updateProgress(type, loaded, total) {
+        const percentCompleted = ((loaded / total) * 100).toFixed(2);
+        this.progress.set(type, percentCompleted);
+        this.logProgress();
+    }
+
     logProgress() {
-        try {
-            process.stdout.clearLine();
-            process.stdout.cursorTo(0);
-            const status = Array.from(this.progress.entries())
-                .map(([type, progress]) => `${type}: ${progress}%`)
-                .join(' | ');
-            process.stdout.write(status);
-        } catch (error) {
-            console.error('Error logging progress:', error.message);
-        }
+        const status = Array.from(this.progress.entries())
+            .map(([type, progress]) => `${type}: ${progress}%`)
+            .join(' | ');
+        process.stdout.clearLine();
+        process.stdout.cursorTo(0);
+        process.stdout.write(status);
     }
 
     async mergeStreams(videoFile, audioFile) {
         try {
             console.log('\nMerging audio and video streams...');
-            const command = `ffmpeg -i "${videoFile}" -i "${audioFile}" -c:v copy -c:a aac "${this.outputFileName}"`;
-            execSync(command);
-            await this.cleanUp([videoFile, audioFile]);
+            execSync(`ffmpeg -i "${videoFile}" -i "${audioFile}" -c:v copy -c:a aac "${this.outputFileName}"`);
             console.log(`\nMerge completed successfully! Output saved as: ${this.outputFileName}`);
+            await this.cleanUp([videoFile, audioFile]);
         } catch (error) {
-            console.error('Error merging streams:', error.message);
-            throw error;
+            throw new Error('Error merging streams');
         }
     }
 
-    async audioConvert(audioFile) {
+    async convertAudioToMp3(audioFile) {
         try {
             console.log('\nConverting audio stream to mp3...');
-            const command = `ffmpeg -i "${audioFile}" -c:a libmp3lame "${this.outputFileName}"`;
-            execSync(command);
-            await this.cleanUp([audioFile]);
+            execSync(`ffmpeg -i "${audioFile}" -c:a libmp3lame "${this.outputFileName}"`);
             console.log(`\nAudio conversion completed successfully! Output saved as: ${this.outputFileName}`);
+            await this.cleanUp([audioFile]);
         } catch (error) {
-            console.error('Error converting audio:', error.message);
-            throw error;
+            throw new Error('Error converting audio');
         }
     }
 
     async cleanUp(files) {
-        try {
-            await Promise.all(files.map(file => fs.unlink(file).catch(() => {})));
-        } catch (error) {
-            console.error('Error cleaning up temporary files:', error.message);
-        }
+        await Promise.all(files.map(file => fs.unlink(file).catch(() => {})));
     }
 
-    async downloadAudio() {
-        console.log('Starting audio download process...\n');
+    async downloadAndProcess(type) {
+        const isAudio = type === 'audio';
+        const url = isAudio ? this.audioUrl : this.videoUrl;
         try {
-            const audioFile = await this.downloadStream(this.audioUrl, 'audio');
-            await this.audioConvert(audioFile);
-            console.log(`\nAudio download completed: ${this.outputFileName}`);
+            const tempFile = await this.downloadStream(url, type);
+            if (isAudio) {
+                await this.convertAudioToMp3(tempFile);
+            } else {
+                await fs.rename(tempFile, this.outputFileName);
+                console.log(`\n${type} download completed: ${this.outputFileName}`);
+            }
         } catch (error) {
-            console.error('Audio download process failed:', error.message);
-            await this.cleanUp(['temp_audio.mp4']);
-        }
-    }
-
-    async downloadVideo() {
-        console.log('Starting video download process...\n');
-        try {
-            const videoFile = await this.downloadStream(this.videoUrl, 'video');
-            await fs.rename(videoFile, this.outputFileName);
-            console.log(`\nVideo download completed: ${this.outputFileName}`);
-        } catch (error) {
-            console.error('Video download process failed:', error.message);
-            await this.cleanUp(['temp_video.mp4']);
+            console.error(`${type} download process failed: ${error.message}`);
+            await this.cleanUp([`temp_${type}.mp4`]);
         }
     }
 
@@ -116,7 +99,7 @@ export class VimeoDownloader {
             ]);
             await this.mergeStreams(videoFile, audioFile);
         } catch (error) {
-            console.error('Combined download process failed:', error.message);
+            console.error(`Combined download process failed: ${error.message}`);
             await this.cleanUp(['temp_video.mp4', 'temp_audio.mp4']);
         }
     }

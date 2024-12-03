@@ -15,11 +15,11 @@ async function main() {
     if (audioOnly) {
         const audioUrl = parseAndTransformUrl(url, await getAudioUrl(data))
         const downloader = new VimeoDownloader(null, audioUrl, newOutputName + '.mp3')
-        await downloader.downloadAudio()
+        await downloader.downloadAndProcess('audio');
     } else if (videoOnly) {
         const videoUrl = parseAndTransformUrl(url, await getVideoUrl(data, maxResolution, resolution))
         const downloader = new VimeoDownloader(videoUrl, null, newOutputName + '.mp4')
-        await downloader.downloadVideo();
+        await downloader.downloadAndProcess('video');
     } else if (combined) {
         const audioUrl = parseAndTransformUrl(url, await getAudioUrl(data))
         const videoUrl = parseAndTransformUrl(url, await getVideoUrl(data, maxResolution, resolution))
