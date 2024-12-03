@@ -4,6 +4,23 @@ import path from 'path';
 
 const validResolutions = ['240', '360', '540', '720', '1080'];
 
+/**
+ * Parses and validates command-line arguments using yargs.
+ *
+ * @param {Object} argv - The parsed command-line arguments.
+ * @param {boolean} argv.a - Download audio only.
+ * @param {boolean} argv.v - Download video only.
+ * @param {boolean} argv.c - Download both audio and video.
+ * @param {boolean} argv.m - Download max resolution video.
+ * @param {string} argv.r - Set resolution (1080, 720, 540, 360, 240).
+ * @param {string} argv.p - Link to JSON playlist.
+ * @param {string} argv.w - Link to webpage.
+ * @param {string} argv.o - Output file name.
+ * @param {string} argv.path - Path to directory.
+ * @param {string} argv.cp - Path to cookies file.
+ * @throws {Error} If invalid or conflicting arguments are provided.
+ * @returns {Object} The validated command-line arguments.
+ */
 const argv = yargs(hideBin(process.argv))
     .usage('Usage: $0 [options]')
     .options({
