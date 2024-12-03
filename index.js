@@ -4,6 +4,17 @@ import { loadPlaylist, loadWebpage } from "./src/utils.js";
 import argv from "./src/args.js";
 import { checkFfmpeg } from "./src/checkFfmpeg.js";
 
+/**
+ * Main function to download and process Vimeo videos.
+ * 
+ * This function checks for ffmpeg, parses command line arguments, loads the webpage or playlist,
+ * constructs the output file name, and initializes the VimeoDownloader to download and process
+ * the video and/or audio.
+ * 
+ * @async
+ * @function main
+ * @returns {Promise<void>} A promise that resolves when the download and processing is complete.
+ */
 async function main() {
     await checkFfmpeg();
     const { a, v, c, p, w, o, r, m, path, cp } = argv;
