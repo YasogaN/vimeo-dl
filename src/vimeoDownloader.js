@@ -10,6 +10,14 @@ export class VimeoDownloader {
         this.progress = new Map();
     }
 
+    /**
+     * Downloads a stream from the given URL and saves it as a temporary file.
+     *
+     * @param {string} url - The URL of the stream to download.
+     * @param {string} type - The type of the stream (used for naming the temporary file).
+     * @returns {Promise<string>} - A promise that resolves to the name of the temporary file.
+     * @throws {Error} - Throws an error if the download fails.
+     */
     async downloadStream(url, type) {
         const tempFileName = `temp_${type}.mp4`;
         try {
@@ -32,12 +40,24 @@ export class VimeoDownloader {
         }
     }
 
+    /**
+     * Updates the progress of a specific type and logs the progress.
+     *
+     * @param {string} type - The type of progress to update (e.g., 'download', 'upload').
+     * @param {number} loaded - The amount of data that has been loaded.
+     * @param {number} total - The total amount of data to be loaded.
+     */
     updateProgress(type, loaded, total) {
         const percentCompleted = ((loaded / total) * 100).toFixed(2);
         this.progress.set(type, percentCompleted);
         this.logProgress();
     }
 
+    /**
+     * Logs the current progress of different types to the console.
+     * The progress is displayed as a percentage for each type, separated by a pipe (|) symbol.
+     * It clears the current line in the console and writes the updated progress status.
+     */
     logProgress() {
         const status = Array.from(this.progress.entries())
             .map(([type, progress]) => `${type}: ${progress}%`)
@@ -47,6 +67,14 @@ export class VimeoDownloader {
         process.stdout.write(status);
     }
 
+    /**
+     * Merges the provided video and audio streams into a single output file.
+     *
+     * @param {string} videoFile - The path to the video file.
+     * @param {string} audioFile - The path to the audio file.
+     * @returns {Promise<void>} - A promise that resolves when the merge is complete.
+     * @throws {Error} - Throws an error if the merging process fails.
+     */
     async mergeStreams(videoFile, audioFile) {
         try {
             console.log('\nMerging audio and video streams...');
@@ -58,6 +86,13 @@ export class VimeoDownloader {
         }
     }
 
+    /**
+     * Converts an audio file to MP3 format using ffmpeg.
+     *
+     * @param {string} audioFile - The path to the audio file to be converted.
+     * @returns {Promise<void>} - A promise that resolves when the conversion is complete.
+     * @throws {Error} - Throws an error if the conversion fails.
+     */
     async convertAudioToMp3(audioFile) {
         try {
             console.log('\nConverting audio stream to mp3...');
@@ -69,10 +104,23 @@ export class VimeoDownloader {
         }
     }
 
+    /**
+     * Asynchronously deletes an array of files.
+     *
+     * @param {string[]} files - An array of file paths to be deleted.
+     * @returns {Promise<void>} A promise that resolves when all files have been deleted.
+     */
     async cleanUp(files) {
         await Promise.all(files.map(file => fs.unlink(file).catch(() => {})));
     }
 
+    /**
+     * Downloads and processes a media file (audio or video) from a specified URL.
+     *
+     * @param {string} type - The type of media to download ('audio' or 'video').
+     * @returns {Promise<void>} - A promise that resolves when the download and processing are complete.
+     * @throws {Error} - Throws an error if the download or processing fails.
+     */
     async downloadAndProcess(type) {
         const isAudio = type === 'audio';
         const url = isAudio ? this.audioUrl : this.videoUrl;
@@ -90,6 +138,15 @@ export class VimeoDownloader {
         }
     }
 
+    /**
+     * Downloads video and audio streams concurrently and merges them.
+     * If the download or merge process fails, it cleans up temporary files.
+     * 
+     * @async
+     * @function download
+     * @returns {Promise<void>} A promise that resolves when the download and merge process is complete.
+     * @throws {Error} Throws an error if the download or merge process fails.
+     */
     async download() {
         console.log('Starting combined download process...\n');
         try {
@@ -104,6 +161,12 @@ export class VimeoDownloader {
         }
     }
 
+    /**
+     * Handles errors that occur during the download process.
+     *
+     * @param {Error} error - The error object that was thrown.
+     * @param {string} type - The type of download that was being attempted.
+     */
     handleDownloadError(error, type) {
         console.error(`\nError downloading ${type}: ${error.message}`);
         if (error.response) {
