@@ -2,6 +2,12 @@
 
 A CLI utility for downloading media content from playlist.json URLs or webpages containing embedded media players.
 
+## Platform Support
+
+**Currently supports:** Vimeo content only
+
+_Note: Support for additional video platforms (YouTube, Dailymotion, etc.) will be added in future releases._
+
 ## ⚠️ LEGAL DISCLAIMER
 
 **This tool is provided for PERSONAL, EDUCATIONAL, and ARCHIVAL purposes only.**
