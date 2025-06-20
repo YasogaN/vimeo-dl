@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { MediaDownloader } from "./src/mediaDownloader.js";
 import { getVideoUrl, getAudioUrl, parseAndTransformUrl } from "./src/urlParsers.js";
 import { loadPlaylist, loadWebpage } from "./src/utils.js";

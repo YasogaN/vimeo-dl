@@ -25,7 +25,7 @@ const validResolutions = ['240', '360', '540', '720', '1080'];
  */
 const argv = yargs(hideBin(process.argv))
     .usage('Usage: $0 [options]')
-    .scriptName('npx "media-stream-util')
+    .scriptName('media-stream-util')
     .options({
         a: { alias: 'audioOnly', desc: 'Download audio only', conflicts: ['vo', 'mr'], coerce: () => true },
         v: { alias: 'videoOnly', desc: 'Download video only', conflicts: ['ao'], coerce: () => true },
