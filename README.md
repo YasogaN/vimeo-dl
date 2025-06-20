@@ -45,8 +45,9 @@ npx media-stream-util [options]
 | `-m, --maxResolution` | Download maximum available resolution     | `-m`                                          |
 | `-o, --output`        | Output filename                           | `-o "my-video"`                               |
 | `--path`              | Output directory path                     | `--path "./downloads"`                        |
-| `-h, --help`          | Show help                                 | `-h`                                          |
-| `-V, --version`       | Show version                              | `-V`                                          |
+| `--help`              | Show help                                 | `--help`                                      |
+| `--version`           | Show version                              | `--version`                                   |
+| `--disclaimer`        | Prints disclaimer                         | `--disclaimer`                                |
 
 ### Examples
 
