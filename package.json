@@ -1,18 +1,18 @@
 {
-  "name": "vimeo-dl",
+  "name": "media-stream-util",
   "version": "1.0.0",
-  "description": "A CLI node module written in JavaScript to download videos using vimeo's playlist.json file or link to a webpage.",
+  "description": "A CLI utility for downloading media content from playlist.json URLs or webpages. For personal, educational, and archival use only.",
   "license": "MIT",
   "keywords": [
-    "vimeo, downloader, vimeo downloader, video downloader"
+    "media downloader, video downloader, playlist, educational"
   ],
-  "homepage": "https://github.com/YasogaN/vimeo-dl#readme",
+  "homepage": "https://github.com/YasogaN/media-stream-util#readme",
   "bugs": {
-    "url": "https://github.com/YasogaN/vimeo-dl/issues"
+    "url": "https://github.com/YasogaN/media-stream-util/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/YasogaN/vimeo-dl.git"
+    "url": "https://github.com/YasogaN/media-stream-util.git"
   },
   "author": {
     "name": "Yasoga Nanayakkarawasam",

@@ -15,7 +15,7 @@ export async function loadPlaylist(url) {
         return data;
     } catch (e) {
         console.error("Error loading playlist:", e.message || e);
-        throw "Failed to load playlist. Please try again.";
+        throw "Failed to load playlist. Please verify the URL and try again.";
     }
 }
 
@@ -59,11 +59,12 @@ function parseCookie(cookie) {
 const delay = (time) => new Promise(res => setTimeout(res, time));
 
 /**
- * Loads a webpage and listens for a specific request URL.
+ * Loads a webpage and listens for playlist requests.
+ * Requires user-provided cookies for authenticated content.
  *
  * @param {string} url - The URL of the webpage to load.
  * @param {string|null} [cookiesPath=null] - The path to a JSON file containing cookies to set, or null if no cookies should be set.
- * @returns {Promise<string|null>} - A promise that resolves to the found URL if the specific request is made, or null if not.
+ * @returns {Promise<string|null>} - A promise that resolves to the found playlist URL if available, or null if not.
  *
  * @throws {Error} - Throws an error if the cookies file cannot be read or parsed.
  */
@@ -76,17 +77,45 @@ export async function loadWebpage(url, cookiesPath = null) {
     let foundURL = null;
     page.on('request', req => {
         const reqUrl = req.url();
-        if (reqUrl.includes('/v2/playlist/av/primary/playlist.json')) {
+        // Look for playlist.json requests without hardcoding platform specifics
+        if (reqUrl.includes('/playlist.json') || reqUrl.includes('playlist')) {
             foundURL = reqUrl;
+            console.log('Found playlist URL (sanitized): [PLAYLIST_URL_FOUND]');
             browser.close();
         }
     });
 
     await page.goto(url);
     await page.waitForFunction(() => {
-        const iframe = document.querySelector('iframe[src*="vimeo.com"]');
-        return iframe?.contentWindow?.document.readyState === 'complete';
+        const iframes = Array.from(document.querySelectorAll('iframe'));
+        return iframes.every(iframe => {
+            try {
+                return iframe.contentWindow && iframe.contentWindow.document.readyState === 'complete';
+            } catch (e) {
+                // Cross-origin iframes may throw; consider them loaded
+                return true;
+            }
+        });
     });
     await delay(5000);
     return foundURL;
+}
+
+export async function printDisclaimer() {
+    console.log(`
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                LEGAL DISCLAIMER                              ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ This tool is provided for PERSONAL, EDUCATIONAL, and ARCHIVAL purposes only. ║
+║                                                                              ║
+║ YOU ARE RESPONSIBLE FOR:                                                     ║
+║ • Complying with all applicable copyright laws                               ║
+║ • Respecting content creators' rights                                        ║
+║ • Following the platform's Terms of Service                                  ║
+║ • Ensuring you have proper authorization to download content                 ║
+║                                                                              ║
+║ This software does NOT bypass DRM or access encrypted content.               ║
+║ Use at your own risk and responsibility.                                     ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+`);
 }

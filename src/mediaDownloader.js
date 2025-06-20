@@ -2,16 +2,15 @@ import axios from "axios";
 import fs from "fs/promises";
 import { execSync } from "child_process";
 
-export class VimeoDownloader {
+export class MediaDownloader {
     constructor(videoUrl, audioUrl, outputFileName) {
         this.videoUrl = videoUrl;
         this.audioUrl = audioUrl;
         this.outputFileName = outputFileName;
         this.progress = new Map();
-    }
-
-    /**
+    }    /**
      * Downloads a stream from the given URL and saves it as a temporary file.
+     * Note: This method only works with publicly accessible, unencrypted streams.
      *
      * @param {string} url - The URL of the stream to download.
      * @param {string} type - The type of the stream (used for naming the temporary file).
@@ -19,6 +18,10 @@ export class VimeoDownloader {
      * @throws {Error} - Throws an error if the download fails.
      */
     async downloadStream(url, type) {
+        if (!url) {
+            throw new Error(`No ${type} URL provided`);
+        }
+
         const tempFileName = `temp_${type}.mp4`;
         try {
             const response = await axios.get(url, {
@@ -111,11 +114,10 @@ export class VimeoDownloader {
      * @returns {Promise<void>} A promise that resolves when all files have been deleted.
      */
     async cleanUp(files) {
-        await Promise.all(files.map(file => fs.unlink(file).catch(() => {})));
-    }
-
-    /**
+        await Promise.all(files.map(file => fs.unlink(file).catch(() => { })));
+    }    /**
      * Downloads and processes a media file (audio or video) from a specified URL.
+     * Sanitizes all log output to prevent exposure of sensitive information.
      *
      * @param {string} type - The type of media to download ('audio' or 'video').
      * @returns {Promise<void>} - A promise that resolves when the download and processing are complete.
@@ -124,6 +126,13 @@ export class VimeoDownloader {
     async downloadAndProcess(type) {
         const isAudio = type === 'audio';
         const url = isAudio ? this.audioUrl : this.videoUrl;
+
+        if (!url) {
+            console.error(`No ${type} URL available for download`);
+            return;
+        }
+
+        console.log(`Starting ${type} download...`);
         try {
             const tempFile = await this.downloadStream(url, type);
             if (isAudio) {
@@ -133,12 +142,11 @@ export class VimeoDownloader {
                 console.log(`\n${type} download completed: ${this.outputFileName}`);
             }
         } catch (error) {
-            console.error(`${type} download process failed: ${error.message}`);
+            const sanitizedError = error.message.replace(/https?:\/\/[^\s]+/g, '[URL_REDACTED]');
+            console.error(`${type} download process failed: ${sanitizedError}`);
             await this.cleanUp([`temp_${type}.mp4`]);
         }
-    }
-
-    /**
+    }    /**
      * Downloads video and audio streams concurrently and merges them.
      * If the download or merge process fails, it cleans up temporary files.
      * 
@@ -156,19 +164,23 @@ export class VimeoDownloader {
             ]);
             await this.mergeStreams(videoFile, audioFile);
         } catch (error) {
-            console.error(`Combined download process failed: ${error.message}`);
+            const sanitizedError = error.message.replace(/https?:\/\/[^\s]+/g, '[URL_REDACTED]');
+            console.error(`Combined download process failed: ${sanitizedError}`);
             await this.cleanUp(['temp_video.mp4', 'temp_audio.mp4']);
         }
     }
 
     /**
      * Handles errors that occur during the download process.
+     * Sanitizes error output to avoid exposing sensitive information.
      *
      * @param {Error} error - The error object that was thrown.
      * @param {string} type - The type of download that was being attempted.
      */
     handleDownloadError(error, type) {
-        console.error(`\nError downloading ${type}: ${error.message}`);
+        // Sanitize error messages to avoid exposing sensitive URLs or tokens
+        const sanitizedMessage = error.message.replace(/[?&](access_token|token|key|auth)=[^&\s]*/gi, '[REDACTED]');
+        console.error(`\nError downloading ${type}: ${sanitizedMessage}`);
         if (error.response) {
             console.error(`HTTP error: ${error.response.status} - ${error.response.statusText}`);
         }

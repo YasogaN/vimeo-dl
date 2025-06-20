@@ -1,11 +1,13 @@
 import yargs from "yargs";
 import { hideBin } from 'yargs/helpers';
 import path from 'path';
+import { printDisclaimer } from './utils.js';
 
 const validResolutions = ['240', '360', '540', '720', '1080'];
 
 /**
  * Parses and validates command-line arguments using yargs.
+ * Provides help and version information with legal disclaimers.
  *
  * @param {Object} argv - The parsed command-line arguments.
  * @param {boolean} argv.a - Download audio only.
@@ -23,6 +25,7 @@ const validResolutions = ['240', '360', '540', '720', '1080'];
  */
 const argv = yargs(hideBin(process.argv))
     .usage('Usage: $0 [options]')
+    .scriptName('npx "media-stream-util')
     .options({
         a: { alias: 'audioOnly', desc: 'Download audio only', conflicts: ['vo', 'mr'], coerce: () => true },
         v: { alias: 'videoOnly', desc: 'Download video only', conflicts: ['ao'], coerce: () => true },
@@ -34,16 +37,21 @@ const argv = yargs(hideBin(process.argv))
                 return String(arg);
             }
         },
-        p: { alias: 'jsonPlaylist', desc: 'Link to json playlist', conflicts: ['wp'], coerce: String },
-        w: { alias: 'webPage', desc: 'Link to webpage', conflicts: ['pj'], coerce: String },
+        p: { alias: 'jsonPlaylist', desc: 'Direct link to playlist.json file', conflicts: ['wp'], coerce: String },
+        w: { alias: 'webPage', desc: 'Link to webpage containing embedded media', conflicts: ['pj'], coerce: String },
         o: {
             alias: 'output', desc: 'Output file name', coerce: (output) => output.replace(/[^a-zA-Z0-9-_]/g, '_')
         },
         path: { desc: 'Path to directory', coerce: (inputPath) => path.resolve(path.normalize(inputPath.trim())) },
-        cp: { alias: 'cookiePath', desc: 'Path to cookies file', coerce: (inputPath) => path.resolve(path.normalize(inputPath.trim())) }
+        cp: { alias: 'cookiePath', desc: 'Path to cookies file', coerce: (inputPath) => path.resolve(path.normalize(inputPath.trim())) },
+        disclaimer: { desc: 'Prints disclaimer', coerce: () => true }
     })
     .check((argv) => {
-        const { a, v, c, m, r, p, w, o } = argv;
+        const { a, v, c, m, r, p, w, o, disclaimer } = argv;
+        if (disclaimer) {
+            printDisclaimer();
+            process.exit(0);
+        }
         if ((a || m) && r) throw new Error('Cannot use resolution flags with audio-only mode');
         if (a && v) throw new Error('Cannot use audio and video-only modes together');
         if (p && w) throw new Error('Cannot use both playlist and webpage links');
