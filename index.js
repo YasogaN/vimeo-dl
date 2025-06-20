@@ -18,7 +18,7 @@ import { checkFfmpeg } from "./src/checkFfmpeg.js";
  */
 async function main() {
     await checkFfmpeg();
-    const { a, v, c, p, w, o, r, m, path, cp, disclaimer } = argv;
+    const { a, v, c, p, w, o, r, m, path, cp } = argv;
     const playlistUrl = p || await loadWebpage(w, cp);
     const playlistData = await loadPlaylist(playlistUrl);
     const outName = path ? `${path}\\${o}` : o;
